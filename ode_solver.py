@@ -1,3 +1,5 @@
+import numpy as np
+
 def euler_step(f, x1, t1, h):
     # function does a single Euler step
     x2 = x1 + h* f(x1,t1)
@@ -14,4 +16,12 @@ def solve_to(step, f, x1, t1, t2, hmax):
     if t != t2:
         h = t2 - t
         x,t = step(f, x, t, h)
+    return x
+
+def solve_ode(f, x0, t, method, hmax):
+    # function returns a series of numerical solution estimates to ode f
+    x = np.zeros_like(t)
+    x[0] = x0[0]
+    for i in range(1, len(t)):
+        x[i] = solve_to(method, f, x[i-1], t[i-1], t[i], hmax)
     return x
