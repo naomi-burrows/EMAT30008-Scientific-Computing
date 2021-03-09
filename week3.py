@@ -56,3 +56,35 @@ print(f'    Euler : {time.perf_counter() - time0}s')
 time0 = time.perf_counter()
 ode_solver.solve_ode(f, x0, t, ode_solver.rk4_step, RK4_h)
 print(f'    RK4   : {time.perf_counter() - time0}s')
+
+#### QUESTION 3
+
+# x.. = -x
+def dUdt(U, t):
+    x = U[0]
+    y = U[1]
+    x_ = y
+    y_ = -x
+    return [x_, y_] # function returns U.=[x., y.]
+
+U0 = [1, 0] # U0 = U(0) = [x(0), y(0)]
+t = np.linspace(0, 100, 1001)
+
+# Solve x.. = -x for x. and x
+sol = ode_solver.solve_ode(dUdt, U0, t, ode_solver.rk4_step, 0.01)
+x = sol[:,0]
+xdot = sol[:,1]
+
+# Plot x against t
+plt.plot(t, x, linewidth=1.5)
+plt.xlabel('time, t')
+plt.ylabel('x')
+plt.savefig('w3q3-x-t.png')
+plt.show()
+
+# Plot x against xdot
+plt.plot(xdot, x, linewidth=1.5)
+plt.xlabel('$\dot{x}$')
+plt.ylabel('x')
+plt.savefig('w3q3-x-xdot.png')
+plt.show()
