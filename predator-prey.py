@@ -3,9 +3,12 @@ import matplotlib.pyplot as plt
 import ode_solver
 
 def main():
-    t = np.linspace(0, 1000, 1001)
+    t = np.linspace(0, 150, 1501)
     b = 0.3
+
     plot_time_series(t, b)
+
+    plot_phase_portrait(t, b)
 
 def predator_prey(u, t, b):
     a = 1
@@ -27,6 +30,17 @@ def plot_time_series(t, b):
     plt.plot(t, y, t, x)
     plt.xlabel('time, t')
     plt.legend(['y', 'x'])
+    plt.show()
+
+def plot_phase_portrait(t, b):
+    sol = ode_solver.solve_ode(lambda u, t: predator_prey(u, t, b), (0.25, 0.25), t, ode_solver.rk4_step, 0.001)
+
+    x = sol[:, 0]
+    y = sol[:, 1]
+
+    plt.plot(x, y)
+    plt.xlabel('x')
+    plt.ylabel('y')
     plt.show()
 
 if __name__ == "__main__":
