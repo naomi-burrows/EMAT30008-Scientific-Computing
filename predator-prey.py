@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import root
+from math import nan
 import ode_solver
 
 def main():
@@ -10,15 +12,17 @@ def main():
 
     # plot_phase_portrait(t, b)
 
-    plot_multiple_ICs(t, b, ((0.1, 0),
-                             (0.1, 0.2),
-                             (0.1, 0.5),
-                             (0.3, 0),
-                             (0.3, 0.2),
-                             (0.3, 0.5),
-                             (0.5, 0),
-                             (0.5, 0.2),
-                             (0.5, 0.5)))
+    # plot_multiple_ICs(t, b, ((0.1, 0),
+    #                          (0.1, 0.2),
+    #                          (0.1, 0.5),
+    #                          (0.3, 0),
+    #                          (0.3, 0.2),
+    #                          (0.3, 0.5),
+    #                          (0.5, 0),
+    #                          (0.5, 0.2),
+    #                          (0.5, 0.5)))
+
+    plot_nullclines(b)
 
 def predator_prey(u, t, b):
     a = 1
@@ -67,6 +71,32 @@ def plot_multiple_ICs(t, b, u0s):
     plt.xlabel('x')
     plt.ylabel('y')
     plt.legend(legend_list)
+    plt.show()
+
+def plot_nullclines(b):
+    # x nullcline
+    xval = np.linspace(0.1,0.6, 51)
+    yval = np.zeros(np.size(xval))
+    for (i, x) in enumerate(xval):
+        result = root(lambda N: predator_prey((x, N), nan, b)[0], 0.25)
+        if result.success:
+            yval[i] = result.x
+        else:
+            yval[i] = nan
+    plt.plot(xval, yval)
+
+    # y nullcline
+    xval = np.linspace(0.1, 0.6, 51)
+    yval = np.zeros(np.size(xval))
+    for (i, x) in enumerate(xval):
+        result = root(lambda N: predator_prey((x, N), nan, b)[1], 0.25)
+        if result.success:
+            yval[i] = result.x
+        else:
+            yval[i] = nan
+    plt.plot(xval, yval)
+
+    plt.legend(['x nullcline', 'y nullcline'])
     plt.show()
 
 if __name__ == "__main__":
