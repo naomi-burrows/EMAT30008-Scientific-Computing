@@ -6,23 +6,25 @@ import ode_solver
 
 def main():
     t = np.linspace(0, 150, 1501)
-    b = 0.3
+    b = 0.2
 
     # plot_time_series(t, b)
 
     # plot_phase_portrait(t, b)
 
-    # plot_multiple_ICs(t, b, ((0.1, 0),
-    #                          (0.1, 0.2),
-    #                          (0.1, 0.5),
-    #                          (0.3, 0),
-    #                          (0.3, 0.2),
-    #                          (0.3, 0.5),
-    #                          (0.5, 0),
-    #                          (0.5, 0.2),
-    #                          (0.5, 0.5)))
+    plot_multiple_ICs(t, b, ((0.1, 0),
+                             (0.1, 0.2),
+                             (0.1, 0.5),
+                             (0.3, 0),
+                             (0.3, 0.2),
+                             (0.3, 0.5),
+                             (0.5, 0),
+                             (0.5, 0.2),
+                             (0.5, 0.5)))
 
     plot_nullclines(b)
+
+    plt.show()
 
 def predator_prey(u, t, b):
     a = 1
@@ -43,8 +45,7 @@ def plot_time_series(t, b):
 
     plt.plot(t, y, t, x)
     plt.xlabel('time, t')
-    plt.legend(['y', 'x'])
-    plt.show()
+    # plt.legend(['y', 'x'])
 
 def plot_phase_portrait(t, b):
     sol = ode_solver.solve_ode(lambda u, t: predator_prey(u, t, b), (0.25, 0.25), t, ode_solver.rk4_step, 0.001)
@@ -55,10 +56,9 @@ def plot_phase_portrait(t, b):
     plt.plot(x, y)
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.show()
 
 def plot_multiple_ICs(t, b, u0s):
-    legend_list = []
+    # legend_list = []
     for u0 in u0s:
         sol = ode_solver.solve_ode(lambda u, t: predator_prey(u, t, b), u0, t, ode_solver.rk4_step, 0.001)
 
@@ -66,12 +66,11 @@ def plot_multiple_ICs(t, b, u0s):
         y = sol[:, 1]
 
         plt.plot(x, y)
-        legend_list.append("(x0, y0) = " + str(u0))
+        # legend_list.append("(x0, y0) = " + str(u0))
 
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.legend(legend_list)
-    plt.show()
+    # plt.legend(legend_list)
 
 def plot_nullclines(b):
     # x nullcline
@@ -96,8 +95,7 @@ def plot_nullclines(b):
             yval[i] = nan
     plt.plot(xval, yval)
 
-    plt.legend(['x nullcline', 'y nullcline'])
-    plt.show()
+    # plt.legend(['x nullcline', 'y nullcline'])
 
 if __name__ == "__main__":
     main()
