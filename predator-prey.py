@@ -4,6 +4,7 @@ from scipy.optimize import root
 from scipy.optimize import fsolve
 from math import nan
 import ode_solver
+import shooting
 
 def main():
     t = np.linspace(0, 200, 2001)
@@ -12,9 +13,7 @@ def main():
     plot_time_series(t, b)
     plt.show()
 
-    orbit = fsolve(shoot, [0.35, 0.35, 21], predator_prey)
-    u0 = orbit[:-1]
-    T = orbit[-1]
+    u0, T = shooting.find_limit_cycle(predator_prey, [0.35, 0.35], 21)
     print('U0: ', u0)
     print('Period: ', T)
 
@@ -22,7 +21,7 @@ def main():
     orbit_sol = ode_solver.solve_ode(predator_prey, u0, t, ode_solver.rk4_step, 0.001)
     x = orbit_sol[:, 0]
     y = orbit_sol[:, 1]
-    plt.plot(t+114.5, y, t+114.5, x)
+    plt.plot(t, y, t, x)
     plt.show()
 
     # plot_phase_portrait(t, b)
@@ -109,22 +108,6 @@ def plot_nullclines(b):
     plt.plot(xval, yval)
 
     # plt.legend(['x nullcline', 'y nullcline'])
-
-# G(U0) = u0 - F(u0, T)
-def G(F, u0, t0, T):
-    # Function solves the ODE and returns the difference between u0 and the solution
-    sol = ode_solver.solve_ode(F, u0, [t0, T], ode_solver.rk4_step, 0.01)
-    return u0 - sol[-1]
-
-# phase condition is dy/dt=0
-def phase_condition(f, u0):
-    return np.array([f(u0, 0)[1]]) # return dy/dt at initial conditions
-
-def shoot(U, f):
-    # U is in the form of initial guesses for variables and T
-    u0 = U[:-1]
-    T = U[-1]
-    return np.concatenate((G(f, u0, 0, T), phase_condition(f, u0)))
 
 if __name__ == "__main__":
     main()
