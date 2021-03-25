@@ -1,5 +1,6 @@
 import numpy as np
 import simulate_ode
+import shooting
 
 def hopf(u, t, beta, sigma=-1.0):
     """
@@ -28,3 +29,15 @@ simulate_ode.plot_time_series(lambda u,t: hopf(u, t, beta=1), (1, 1), t, labels=
 
 # Plot phase portrait
 simulate_ode.plot_phase_portrait(lambda u,t: hopf(u, t, beta=1), (1, 1), t, labels=['u1', 'u2'])
+
+# Find limit cycle through numerical shooting
+u0, T = shooting.find_limit_cycle(lambda u,t: hopf(u, t, beta=1), (-1, 0), 6)
+print('U0: ', u0)
+print('Period: ', T)
+
+# Plot limit cycle
+t = np.linspace(0, T, 101)
+# Plot limit cycle as time series
+simulate_ode.plot_time_series(lambda u,t: hopf(u, t, beta=1), u0, t, labels=['u1', 'u2'])
+# Plot limit cycle as phase portrait
+simulate_ode.plot_phase_portrait(lambda u,t: hopf(u, t, beta=1), u0, t, labels=['u1', 'u2'])
