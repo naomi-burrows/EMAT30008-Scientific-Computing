@@ -42,7 +42,7 @@ plt.legend(['x', 'y'])
 plt.show()
 
 # Find limit cycle through numerical shooting
-u0, T = shooting.find_limit_cycle(predator_prey, [0.35, 0.35], 21)
+u0, T = shooting.find_limit_cycle(predator_prey, [0.35, 0.35], 21, phase_index=1)
 print('U0: ', u0)
 print('Period: ', T)
 
