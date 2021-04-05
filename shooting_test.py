@@ -52,21 +52,16 @@ u0, T = shooting.find_limit_cycle(lambda u,t: hopf(u, t, beta=1), (-1, 0), 6)
 print('U0: ', u0)
 print('Period: ', T)
 
-# Plot limit cycle
+# Plot limit cycle - compare numerical and analytic solution
 t = np.linspace(0, T, 101)
-# Plot limit cycle as time series
-simulate_ode.plot_time_series(lambda u,t: hopf(u, t, beta=1), u0, t, labels=['u1', 'u2'])
-# Plot limit cycle as phase portrait
-simulate_ode.plot_phase_portrait(lambda u,t: hopf(u, t, beta=1), u0, t, labels=['u1', 'u2'])
-
-# Plot real solution - time series
-u1, u2 = real_sol(t, beta=1)
+u1, u2 = real_sol(t, beta=1, theta=np.pi)    # find u1 and u2 from analytic solution
+# Time series
+simulate_ode.plot_time_series(lambda u,t: hopf(u, t, beta=1), u0, t, show=False)
 plt.plot(t, u1, t, u2)
-plt.xlabel('time, t')
-plt.legend(('u1', 'u2'))
+plt.legend(('u1 - numerical', 'u2 - numerical', 'u1 - analytic', 'u2 - analytic'))
 plt.show()
-# Plot real solution - phase portrait
+# Phase portrait
+simulate_ode.plot_phase_portrait(lambda u,t: hopf(u, t, beta=1), u0, t, show=False)
 plt.plot(u1, u2)
-plt.xlabel('u1')
-plt.ylabel('u2')
+plt.legend(('numerical', 'analytic'))
 plt.show()
