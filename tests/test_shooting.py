@@ -1,5 +1,6 @@
 import numpy as np
 import shooting
+import ode_solver
 import unittest
 
 def hopf(u, t, beta, sigma=-1.0):
@@ -42,15 +43,32 @@ def real_sol(t, beta, theta=0.0):
 class TestShooting(unittest.TestCase):
 
     def setUp(self):
-        self.t = np.linspace(0, 40, 401)
+        # Find limit cycle with numerical shooting
+        t = np.linspace(0, 40, 401)
         self.u0, self.T = shooting.find_limit_cycle(lambda u, t: hopf(u, t, beta=1), (-1, 0), 6)
 
+        # Find solution values using solve_ode from ode_solver
+        t = np.linspace(0, self.T, 101)
+        sol = ode_solver.solve_ode(lambda u, t: hopf(u, t, beta=1), self.u0, t, ode_solver.rk4_step, 0.001)
+        self.u1 = sol[:, 0]
+        self.u2 = sol[:, 1]
+
+        # Find solution values using analytic solution for same t range
+        self.u1_real, self.u2_real = real_sol(t, beta=1, theta=np.pi)
+
     def test_T(self):
+        # Test that time period found is equal to 2pi
         self.assertAlmostEqual(self.T, np.pi*2)
 
     def test_u0(self):
-        self.assertAlmostEqual(self.u0[0], -1)
-        self.assertAlmostEqual(self.u0[1], 0)
+        # Test that initial conditions found are the same as the real solution start point
+        self.assertAlmostEqual(self.u0[0], self.u1_real[0])
+        self.assertAlmostEqual(self.u0[1], self.u2_real[0])
+
+    def test_endpoints(self):
+        # test that the end point = start point
+        self.assertAlmostEqual(self.u1[-1], self.u1[0])
+        self.assertAlmostEqual(self.u2[-1], self.u2[0])
 
 if __name__ == '__main__':
     unittest.main()
