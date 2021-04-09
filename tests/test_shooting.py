@@ -41,16 +41,16 @@ def real_sol(t, beta, theta=0.0):
 
 class TestShooting(unittest.TestCase):
 
+    def setUp(self):
+        self.t = np.linspace(0, 40, 401)
+        self.u0, self.T = shooting.find_limit_cycle(lambda u, t: hopf(u, t, beta=1), (-1, 0), 6)
+
     def test_T(self):
-        t = np.linspace(0, 40, 401)
-        T = shooting.find_limit_cycle(lambda u, t: hopf(u, t, beta=1), (-1, 0), 6)[1]
-        self.assertAlmostEqual(T, np.pi*2)
+        self.assertAlmostEqual(self.T, np.pi*2)
 
     def test_u0(self):
-        t = np.linspace(0, 40, 401)
-        u0 = shooting.find_limit_cycle(lambda u, t: hopf(u, t, beta=1), (-1, 0), 6)[0]
-        self.assertAlmostEqual(u0[0], -1)
-        self.assertAlmostEqual(u0[1], 0)
+        self.assertAlmostEqual(self.u0[0], -1)
+        self.assertAlmostEqual(self.u0[1], 0)
 
 if __name__ == '__main__':
     unittest.main()
