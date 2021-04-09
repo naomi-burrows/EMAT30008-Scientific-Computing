@@ -66,9 +66,14 @@ class TestShooting(unittest.TestCase):
         self.assertAlmostEqual(self.u0[1], self.u2_real[0])
 
     def test_endpoints(self):
-        # test that the end point = start point
+        # Test that the end point = start point
         self.assertAlmostEqual(self.u1[-1], self.u1[0])
         self.assertAlmostEqual(self.u2[-1], self.u2[0])
+
+    def test_allpoints(self):
+        # Test that all points calculated match the analytic solution
+        self.assertAlmostEqual(self.u1.all(), self.u1_real.all())
+        self.assertAlmostEqual(self.u2.all(), self.u2_real.all())
 
 if __name__ == '__main__':
     unittest.main()
