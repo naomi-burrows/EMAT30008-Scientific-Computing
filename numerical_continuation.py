@@ -1,17 +1,17 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 import shooting
 
-def natural_parameter_continuation(f, u0_, alpha_range, delta_alpha):
+def natural_parameter_continuation(f, u0_, alpha_range, delta_alpha, discretisation=False):
     """
     Solves equation denoted by f for a range of alpha values by natural parameter continuation.
 
         Parameters:
-            f (function):           equation to be solved by natural parameter continuation
-            u0_ (float):            initial estimation of the solution at first alpha value
-            alpha_range (tuple):    range of alpha values to solve over, (start value, end value)
-            delta_alpha (float):    alpha step size
+            f (function):               equation to be solved by natural parameter continuation
+            u0_ (float):                initial estimation of the solution at first alpha value
+            alpha_range (tuple):        range of alpha values to solve over, (start value, end value)
+            delta_alpha (float):        alpha step size
+            discretisation (function):  the discretisation to use, e.g. shooting
 
         Returns:
             list of alpha values and list of solutions
@@ -19,7 +19,7 @@ def natural_parameter_continuation(f, u0_, alpha_range, delta_alpha):
 
     # Unpack alpha_range and make an array of alpha values
     alpha_start, alpha_end = alpha_range
-    num_alphas = int((alpha_end - alpha_start)/delta_alpha)
+    num_alphas = int(abs(alpha_end - alpha_start)/delta_alpha)
     alphas = np.linspace(alpha_start, alpha_end, num_alphas)
 
     # Solve for alpha0
@@ -33,17 +33,3 @@ def natural_parameter_continuation(f, u0_, alpha_range, delta_alpha):
 
     return alphas, us
 
-
-def cubic_eq(x, c):
-    return x**3 -x +c
-
-# Solve by natural parameter continuation
-cs, xs = natural_parameter_continuation(cubic_eq, 1.5, (-2, 2), 0.001)
-
-# Plot results - x against c
-plt.plot(cs, xs)
-plt.show()
-
-# Plot results - f(x) against c, should all be zero
-plt.plot(cs, cubic_eq(np.array(xs), np.array(cs)))
-plt.show()
