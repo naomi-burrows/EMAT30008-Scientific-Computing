@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import fsolve
 import ode_solver
 
-def G(f, u0, t0, T):
+def G(f, u0, t0, T, *arg):
     """
     Solves the ODE and returns the difference between u0 and the solution.
 
@@ -11,15 +11,16 @@ def G(f, u0, t0, T):
             u0 (tuple):     estimate of initial conditions
             t0 (float):     initial time
             T (tuple):      estimate of time period
+            arg:            any additional arguments f expects
 
         Returns:
             the difference between the solution found and the initial estimate, u0
     """
-    sol = ode_solver.solve_ode(f, u0, [t0, T], ode_solver.rk4_step, 0.01)
+    sol = ode_solver.solve_ode(f, u0, [t0, T], ode_solver.rk4_step, 0.01, *arg)
     return u0 - sol[-1]
 
 # phase condition is of form d?/dt=0 (variable represented by ? is determined by the phase_index)
-def phase_condition(f, u0, phase_index):
+def phase_condition(f, u0, phase_index, *arg):
     """
     The phase condition to be used for numerical shooting.
     It is of the form d?/dt=0 (where the variable represented by ? is determined by the phase_index).
@@ -28,13 +29,14 @@ def phase_condition(f, u0, phase_index):
             f (function):       the ode to be solved with numerical shooting
             u0 (tuple):         initial guess
             phase_index (int):  the index for the variable to be used. The phase condition is that d/dt(this variable) = 0
+            arg:                any additional arguments f expects
 
         Returns:
             the value of d/dt(variable determined by phase_index) at u0
     """
-    return np.array([f(u0, 0)[phase_index]])
+    return np.array([f(u0, 0, *arg)[phase_index]])
 
-def shoot(U, f, phase_index):
+def shoot(U, f, phase_index=0, *arg):
     """
     Function returns the array to be solved for roots in find_limit_cycle.
 
@@ -42,15 +44,16 @@ def shoot(U, f, phase_index):
             U (tuple):          initial guesses for variables and time period
             f (function):       the ode to be solved with numerical shooting
             phase_index (int):  the index for the variable to be used for the phase condition. d/dt(this variable) = 0
+            arg:                any additional arguments f expects
 
         Returns:
             an array of u0-solution and the phase condition. This will make up a system of equations to be solved.
     """
     u0 = U[:-1]
     T = U[-1]
-    return np.concatenate((G(f, u0, 0, T), phase_condition(f, u0, phase_index)))
+    return np.concatenate((G(f, u0, 0, T, *arg), phase_condition(f, u0, phase_index, *arg)))
 
-def find_limit_cycle(f, u0_, T_, phase_index=0):
+def find_limit_cycle(f, u0_, T_, phase_index=0, *arg):
     """
     Solves for u0 and T which make a limit cycle.
 
@@ -59,11 +62,12 @@ def find_limit_cycle(f, u0_, T_, phase_index=0):
             u0_ (tuple):        an estimate for the initial conditions of the variables in f
             T_ (float):         an estimate for the time period
             phase_index (int):  optional, default=0. The index for the variable to be used for the phase condition. d/dt(this variable) = 0
+            arg:                any additional arguments f expects
 
         Returns:
             the solutions for u0 and T - the initial conditions and time period of the limit cycle
     """
-    sol = fsolve(lambda U, f: shoot(U, f, phase_index), np.concatenate((u0_, [T_])), f)
+    sol = fsolve(lambda U, f: shoot(U, f, phase_index, *arg), np.concatenate((u0_, [T_])), f)
     u0 = sol[:-1]
     T = sol[-1]
     return u0, T
