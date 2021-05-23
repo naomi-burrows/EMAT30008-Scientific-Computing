@@ -6,6 +6,7 @@
 #   u=u_I(x) 0<=x<=L,t=0
 
 import numpy as np
+from scipy.sparse import diags
 import pylab as pl
 from math import pi
 
@@ -41,6 +42,10 @@ print("deltax=", deltax)
 print("deltat=", deltat)
 print("lambda=", lmbda)
 
+# Set up matrix
+diagonals = [[1 - 2*lmbda] * mx, [lmbda] * (mx-1), [lmbda] * (mx-1)]
+A_FE = diags(diagonals, [0, -1, 1]).toarray()
+
 # Set up the solution variables
 u_j = np.zeros(x.size)  # u at current time step
 u_jp1 = np.zeros(x.size)  # u at next time step
@@ -53,8 +58,8 @@ for i in range(0, mx + 1):
 for j in range(0, mt):
     # Forward Euler timestep at inner mesh points
     # PDE discretised at position x[i], time t[j]
-    for i in range(1, mx):
-        u_jp1[i] = u_j[i] + lmbda * (u_j[i - 1] - 2 * u_j[i] + u_j[i + 1])
+
+    u_jp1[1:] = np.dot(A_FE, u_j[1:])
 
     # Boundary conditions
     u_jp1[0] = 0
