@@ -10,69 +10,90 @@ from scipy.sparse import diags
 import pylab as pl
 from math import pi
 
-# Set problem parameters/functions
-kappa = 1.0  # diffusion constant
-L = 1.0  # length of spatial domain
-T = 0.5  # total time to solve for
+def forward_euler(u_I, kappa, L, T, mx, mt):
+    """
+    Solves PDE using forward Euler method.
 
+        Parameters:
+            u_I (function): Initial temperature distribution as a function of x
+            kappa (float):  Diffusion constant
+            L (float):      Length of spatial domain
+            T (float):      Total time to solve for
+            mx (int):       Number of gridpoints in space
+            mt (int):       Number of gridpoints in time
 
-def u_I(x):
-    # initial temperature distribution
-    y = np.sin(pi * x / L)
-    return y
+        Returns:
+            x, u_j (the values of u at each x at time T)
 
+    """
 
-def u_exact(x, t):
-    # the exact solution
-    y = np.exp(-kappa * (pi ** 2 / L ** 2) * t) * np.sin(pi * x / L)
-    return y
+    # Set up the numerical environment variables
+    x = np.linspace(0, L, mx + 1)  # mesh points in space
+    t = np.linspace(0, T, mt + 1)  # mesh points in time
+    deltax = x[1] - x[0]  # gridspacing in x
+    deltat = t[1] - t[0]  # gridspacing in t
+    lmbda = kappa * deltat / (deltax ** 2)  # mesh fourier number
+    print("deltax=", deltax)
+    print("deltat=", deltat)
+    print("lambda=", lmbda)
 
+    # Set up matrix
+    diagonals = [[1 - 2*lmbda] * mx, [lmbda] * (mx-1), [lmbda] * (mx-1)]
+    A_FE = diags(diagonals, [0, -1, 1]).toarray()
 
-# Set numerical parameters
-mx = 10  # number of gridpoints in space
-mt = 1000  # number of gridpoints in time
+    # Set up the solution variables
+    u_j = np.zeros(x.size)  # u at current time step
+    u_jp1 = np.zeros(x.size)  # u at next time step
 
-# Set up the numerical environment variables
-x = np.linspace(0, L, mx + 1)  # mesh points in space
-t = np.linspace(0, T, mt + 1)  # mesh points in time
-deltax = x[1] - x[0]  # gridspacing in x
-deltat = t[1] - t[0]  # gridspacing in t
-lmbda = kappa * deltat / (deltax ** 2)  # mesh fourier number
-print("deltax=", deltax)
-print("deltat=", deltat)
-print("lambda=", lmbda)
+    # Set initial condition
+    for i in range(0, mx + 1):
+        u_j[i] = u_I(x[i])
 
-# Set up matrix
-diagonals = [[1 - 2*lmbda] * mx, [lmbda] * (mx-1), [lmbda] * (mx-1)]
-A_FE = diags(diagonals, [0, -1, 1]).toarray()
+    # Solve the PDE: loop over all time points
+    for j in range(0, mt):
+        # Forward Euler timestep at inner mesh points
+        # PDE discretised at position x[i], time t[j]
 
-# Set up the solution variables
-u_j = np.zeros(x.size)  # u at current time step
-u_jp1 = np.zeros(x.size)  # u at next time step
+        u_jp1[1:] = np.dot(A_FE, u_j[1:])
 
-# Set initial condition
-for i in range(0, mx + 1):
-    u_j[i] = u_I(x[i])
+        # Boundary conditions
+        u_jp1[0] = 0
+        u_jp1[mx] = 0
 
-# Solve the PDE: loop over all time points
-for j in range(0, mt):
-    # Forward Euler timestep at inner mesh points
-    # PDE discretised at position x[i], time t[j]
+        # Save u_j at time t[j+1]
+        u_j[:] = u_jp1[:]
 
-    u_jp1[1:] = np.dot(A_FE, u_j[1:])
+    return x, u_j
 
-    # Boundary conditions
-    u_jp1[0] = 0
-    u_jp1[mx] = 0
+if __name__ == "__main__":
 
-    # Save u_j at time t[j+1]
-    u_j[:] = u_jp1[:]
+    # Set problem parameters/functions
+    kappa = 1.0  # diffusion constant
+    L = 1.0  # length of spatial domain
+    T = 0.5  # total time to solve for
 
-# Plot the final result and exact solution
-pl.plot(x, u_j, 'ro', label='num')
-xx = np.linspace(0, L, 250)
-pl.plot(xx, u_exact(xx, T), 'b-', label='exact')
-pl.xlabel('x')
-pl.ylabel('u(x,0.5)')
-pl.legend(loc='upper right')
-pl.show()
+    def u_I(x):
+        # initial temperature distribution
+        y = np.sin(pi * x / L)
+        return y
+
+    def u_exact(x, t):
+        # the exact solution
+        y = np.exp(-kappa * (pi ** 2 / L ** 2) * t) * np.sin(pi * x / L)
+        return y
+
+    # Set numerical parameters
+    mx = 10  # number of gridpoints in space
+    mt = 1000  # number of gridpoints in time
+
+    # Solve
+    x, u_j = forward_euler(u_I, kappa, L, T, mx, mt)
+
+    # Plot the final result and exact solution
+    pl.plot(x, u_j, 'ro', label='num')
+    xx = np.linspace(0, L, 250)
+    pl.plot(xx, u_exact(xx, T), 'b-', label='exact')
+    pl.xlabel('x')
+    pl.ylabel('u(x,'+str(T)+')')
+    pl.legend(loc='upper right')
+    pl.show()
