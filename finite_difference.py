@@ -6,7 +6,7 @@
 #   u=u_I(x) 0<=x<=L,t=0
 
 import numpy as np
-from scipy.sparse import diags
+import scipy.sparse.linalg
 import pylab as pl
 from math import pi
 
@@ -39,7 +39,7 @@ def forward_euler(u_I, kappa, L, T, mx, mt):
 
     # Set up matrix
     diagonals = [[1 - 2*lmbda] * mx, [lmbda] * (mx-1), [lmbda] * (mx-1)]
-    A_FE = diags(diagonals, [0, -1, 1])
+    A_FE = scipy.sparse.diags(diagonals, [0, -1, 1])
 
     # Set up the solution variables
     u_j = np.zeros(x.size)  # u at current time step
@@ -55,6 +55,61 @@ def forward_euler(u_I, kappa, L, T, mx, mt):
         # PDE discretised at position x[i], time t[j]
 
         u_jp1[1:] = A_FE.dot(u_j[1:])
+
+        # Boundary conditions
+        u_jp1[0] = 0
+        u_jp1[mx] = 0
+
+        # Save u_j at time t[j+1]
+        u_j[:] = u_jp1[:]
+
+    return x, u_j
+
+def backward_euler(u_I, kappa, L, T, mx, mt):
+    """
+    Solves PDE using backward Euler method.
+
+        Parameters:
+            u_I (function): Initial temperature distribution as a function of x
+            kappa (float):  Diffusion constant
+            L (float):      Length of spatial domain
+            T (float):      Total time to solve for
+            mx (int):       Number of gridpoints in space
+            mt (int):       Number of gridpoints in time
+
+        Returns:
+            x, u_j (the values of u at each x at time T)
+
+    """
+
+    # Set up the numerical environment variables
+    x = np.linspace(0, L, mx + 1)  # mesh points in space
+    t = np.linspace(0, T, mt + 1)  # mesh points in time
+    deltax = x[1] - x[0]  # gridspacing in x
+    deltat = t[1] - t[0]  # gridspacing in t
+    lmbda = kappa * deltat / (deltax ** 2)  # mesh fourier number
+    print("deltax=", deltax)
+    print("deltat=", deltat)
+    print("lambda=", lmbda)
+
+    # Set up matrix
+    diagonals = [[1 + 2*lmbda] * mx, [- lmbda] * (mx-1), [- lmbda] * (mx-1)]
+    A_BE = scipy.sparse.diags(diagonals, [0, -1, 1])
+
+    # Set up the solution variables
+    u_j = np.zeros(x.size)  # u at current time step
+    u_jp1 = np.zeros(x.size)  # u at next time step
+
+    # Set initial condition
+    for i in range(0, mx + 1):
+        u_j[i] = u_I(x[i])
+
+    # Solve the PDE: loop over all time points
+    for j in range(0, mt):
+        # Backward Euler timestep at inner mesh points
+        # PDE discretised at position x[i], time t[j]
+
+        u_jp1[1:] = scipy.sparse.linalg.spsolve(A_BE, u_j[1:])
 
         # Boundary conditions
         u_jp1[0] = 0
@@ -87,7 +142,7 @@ if __name__ == "__main__":
     mt = 1000  # number of gridpoints in time
 
     # Solve
-    x, u_j = forward_euler(u_I, kappa, L, T, mx, mt)
+    x, u_j = backward_euler(u_I, kappa, L, T, mx, mt)
 
     # Plot the final result and exact solution
     pl.plot(x, u_j, 'ro', label='num')
