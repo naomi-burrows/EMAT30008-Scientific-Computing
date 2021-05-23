@@ -39,7 +39,7 @@ def forward_euler(u_I, kappa, L, T, mx, mt):
 
     # Set up matrix
     diagonals = [[1 - 2*lmbda] * mx, [lmbda] * (mx-1), [lmbda] * (mx-1)]
-    A_FE = diags(diagonals, [0, -1, 1]).toarray()
+    A_FE = diags(diagonals, [0, -1, 1])
 
     # Set up the solution variables
     u_j = np.zeros(x.size)  # u at current time step
@@ -54,7 +54,7 @@ def forward_euler(u_I, kappa, L, T, mx, mt):
         # Forward Euler timestep at inner mesh points
         # PDE discretised at position x[i], time t[j]
 
-        u_jp1[1:] = np.dot(A_FE, u_j[1:])
+        u_jp1[1:] = A_FE.dot(u_j[1:])
 
         # Boundary conditions
         u_jp1[0] = 0
