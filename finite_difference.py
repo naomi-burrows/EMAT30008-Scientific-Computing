@@ -41,15 +41,15 @@ def finite_difference(u_I, kappa, L, T, mx, mt, method):
     # Set up matrix/matrices
     if method == 'FE':
         diagonals = [[1 - 2*lmbda] * mx, [lmbda] * (mx-1), [lmbda] * (mx-1)]
-        A_FE = scipy.sparse.diags(diagonals, [0, -1, 1])
+        A_FE = scipy.sparse.diags(diagonals, [0, -1, 1], format = 'csc')
     elif method == 'BE':
         diagonals = [[1 + 2 * lmbda] * mx, [- lmbda] * (mx - 1), [- lmbda] * (mx - 1)]
-        A_BE = scipy.sparse.diags(diagonals, [0, -1, 1])
+        A_BE = scipy.sparse.diags(diagonals, [0, -1, 1], format = 'csc')
     elif method == 'CN':
         diagonals = [[1 + lmbda] * mx, [-lmbda / 2] * (mx - 1), [-lmbda / 2] * (mx - 1)]
-        A_CN = scipy.sparse.diags(diagonals, [0, -1, 1])
+        A_CN = scipy.sparse.diags(diagonals, [0, -1, 1], format = 'csc')
         diagonals = [[1 - lmbda] * mx, [lmbda / 2] * (mx - 1), [lmbda / 2] * (mx - 1)]
-        B_CN = scipy.sparse.diags(diagonals, [0, -1, 1])
+        B_CN = scipy.sparse.diags(diagonals, [0, -1, 1], format = 'csc')
     else:
         print('Choose a method:\n   \'FE\' - forward Euler\n   \'BE\' - backward Euler\n   \'CN\' - Crank Nicholson')
 
