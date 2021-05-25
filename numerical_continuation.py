@@ -48,10 +48,14 @@ def pseudo_arclength(f, u0_, alpha_range, delta_alpha, discretisation):
             list of alpha values and list of solutions
     """
 
-    # Unpack alpha_range and make an array of alpha values
+    # Unpack alpha_range and find the second alpha value, and the stopping condition (alpha_end is reached)
     alpha_start, alpha_end = alpha_range
-    num_alphas = math.floor(abs(alpha_end - alpha_start) / delta_alpha)
-    alphas = np.linspace(alpha_start, alpha_end, num_alphas)
+    if alpha_end - alpha_start < 0:
+        alphas = [alpha_start, alpha_start - delta_alpha]
+        end_condition = lambda alpha: alpha < alpha_end
+    else:
+        alphas = [alpha_start, alpha_start + delta_alpha]
+        end_condition = lambda alpha: alpha > alpha_end
 
     # Solve for alpha0
     u0 = fsolve(lambda U, f: discretisation(U, f, alpha_start), u0_, f)
@@ -59,9 +63,10 @@ def pseudo_arclength(f, u0_, alpha_range, delta_alpha, discretisation):
     # Solve for alpha1 using natural parameter continuation
     u1 = fsolve(lambda U, f: discretisation(U, f, alphas[1]), u0, f)
 
-    # Solve for other alpha values using pseudo-arclength continuation
+    # Solve until the final alpha value is reached using pseudo-arclength continuation
     us = [u0, u1]
-    for i in range(2, len(alphas)):
+    i = 2
+    while not end_condition(alphas[-1]):
 
         # Generate the secant
         nu0 = np.array([alphas[i-2], *us[i-2]])
@@ -77,6 +82,8 @@ def pseudo_arclength(f, u0_, alpha_range, delta_alpha, discretisation):
         # Solve
         sol = fsolve(lambda nu2, f: np.append(discretisation(nu2[1:], f, nu2[0]), PAeq(nu2)), nu2_, f)
         us.append(sol[1:])
-        alphas[i] = sol[0]
+        alphas.append(sol[0])
+
+        i += 1
 
     return alphas, us
