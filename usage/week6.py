@@ -39,10 +39,14 @@ if problem_to_run == 1: # cubic_eq code
 
     # Plot results - x against c
     plt.plot(cs, xs)
+    plt.xlabel('c')
+    plt.ylabel('x')
     plt.show()
 
     # Plot results - f(x) against c, should all be zero
     plt.plot(cs, cubic_eq(np.array([x[0] for x in xs]), np.array(cs)))
+    plt.xlabel('c')
+    plt.ylabel('f(x)')
     plt.show()
 
 elif problem_to_run == 2: # hopf code
@@ -56,6 +60,7 @@ elif problem_to_run == 2: # hopf code
 
     # Plot results - u1 and u2 against beta
     plt.plot(betas, [u[0] for u in us], betas, [u[1] for u in us])
+    plt.xlabel('beta')
     plt.legend(['u1', 'u2'])
     plt.show()
 
