@@ -67,24 +67,39 @@ def dUdt(U, t):
     y_ = -x
     return [x_, y_] # function returns U.=[x., y.]
 
+def U_analytic(t, U0):
+    # analytic solution of dUdt
+    #   x(t) = c1*sin(t) + c2*cos(t)
+    #   y(t) = c1*cos(t) - c2*sin(t)
+
+    c2, c1 = U0
+
+    return [c1*np.sin(t) + c2*np.cos(t), c1*np.cos(t) - c2*np.sin(t)]
+
+
 U0 = [1, 0] # U0 = U(0) = [x(0), y(0)]
-t = np.linspace(0, 100, 1001)
+t = np.linspace(0, 30, 1001)
 
 # Solve x.. = -x for x. and x
-sol = ode_solver.solve_ode(dUdt, U0, t, ode_solver.rk4_step, 0.01)
+sol = ode_solver.solve_ode(dUdt, U0, t, ode_solver.euler_step, 0.01)
 x = sol[:,0]
 xdot = sol[:,1]
 
+# Use analytic solution
+x_analytic, xdot_analytic = U_analytic(t, U0)
+
 # Plot x against t
-plt.plot(t, x, linewidth=1.5)
+plt.plot(t, x, t, x_analytic, linewidth=1.5)
 plt.xlabel('time, t')
 plt.ylabel('x')
+plt.legend(['numerical', 'analytic'], loc='upper right')
 plt.savefig('w3q3-x-t.png')
 plt.show()
 
 # Plot x against xdot
-plt.plot(xdot, x, linewidth=1.5)
+plt.plot(xdot, x, xdot_analytic, x_analytic, linewidth=1.5)
 plt.xlabel('$\dot{x}$')
 plt.ylabel('x')
+plt.legend(['numerical', 'analytic'], loc='upper right')
 plt.savefig('w3q3-x-xdot.png')
 plt.show()
