@@ -21,7 +21,7 @@ sol = ode_solver.solve_ode(f, x0, t, ode_solver.rk4_step, h)[1][0]
 print(f'RK4   approximation (h = {h}) of x(1) = {sol}\n')
 
 # Find the Euler and RK4 approximations for x(1) for different values of h
-h = np.logspace(-5, 0, 300)
+h = np.logspace(-6, 0, 300)
 real = np.exp(1)    # real value of x(1)
 sol_euler = [ode_solver.solve_ode(f, x0, t, ode_solver.euler_step, hvalue)[1][0] for hvalue in h]
 sol_rk4 = [ode_solver.solve_ode(f, x0, t, ode_solver.rk4_step, hvalue)[1][0] for hvalue in h]
@@ -39,7 +39,7 @@ plt.savefig('Euler-RK4-Errors.png')
 plt.show()
 
 # Find step sizes for Euler and RK4 that give the same error
-err_to_find = 2.5*10**(-5)
+err_to_find = 1*10**(-5)
 Euler_h = np.interp(err_to_find, err_euler, h)
 RK4_h = np.interp(err_to_find, err_rk4, h)
 print(f'h values for error of {err_to_find}:')
