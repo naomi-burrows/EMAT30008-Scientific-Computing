@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import fsolve
-import shooting
+import math
 
 def natural_parameter_continuation(f, u0_, alpha_range, delta_alpha, discretisation):
     """
@@ -19,7 +19,7 @@ def natural_parameter_continuation(f, u0_, alpha_range, delta_alpha, discretisat
 
     # Unpack alpha_range and make an array of alpha values
     alpha_start, alpha_end = alpha_range
-    num_alphas = int(abs(alpha_end - alpha_start)/delta_alpha)
+    num_alphas = math.floor(abs(alpha_end - alpha_start)/delta_alpha)
     alphas = np.linspace(alpha_start, alpha_end, num_alphas)
 
     # Solve for alpha0
@@ -33,3 +33,50 @@ def natural_parameter_continuation(f, u0_, alpha_range, delta_alpha, discretisat
 
     return alphas, us
 
+def pseudo_arclength(f, u0_, alpha_range, delta_alpha, discretisation):
+    """
+    Solves equation denoted by f for a range of alpha values by pseudo-arclength continuation.
+
+        Parameters:
+            f (function):               equation to be solved by natural parameter continuation
+            u0_ (tuple):                initial estimation of the solution at first alpha value
+            alpha_range (tuple):        range of alpha values to solve over, (start value, end value)
+            delta_alpha (float):        alpha step size
+            discretisation (function):  the discretisation to use, e.g. shooting. Function args: u0_, f, alpha
+
+        Returns:
+            list of alpha values and list of solutions
+    """
+
+    # Unpack alpha_range and make an array of alpha values
+    alpha_start, alpha_end = alpha_range
+    num_alphas = math.floor(abs(alpha_end - alpha_start) / delta_alpha)
+    alphas = np.linspace(alpha_start, alpha_end, num_alphas)
+
+    # Solve for alpha0
+    u0 = fsolve(lambda U, f: discretisation(U, f, alpha_start), u0_, f)
+
+    # Solve for alpha1 using natural parameter continuation
+    u1 = fsolve(lambda U, f: discretisation(U, f, alphas[1]), u0, f)
+
+    # Solve for other alpha values using pseudo-arclength continuation
+    us = [u0, u1]
+    for i in range(2, len(alphas)):
+
+        # Generate the secant
+        nu0 = np.array([alphas[i-2], *us[i-2]])
+        nu1 = np.array([alphas[i-1], *us[i-1]])
+        delta = nu1 - nu0
+
+        # Predict solution
+        nu2_ = nu1 + delta
+
+        # Pseudo-arclength equation
+        PAeq = lambda nu2: np.dot(nu2 - nu2_, delta)
+
+        # Solve
+        sol = fsolve(lambda nu2, f: np.append(discretisation(nu2[1:], f, nu2[0]), PAeq(nu2)), nu2_, f)
+        us.append(sol[1:])
+        alphas[i] = sol[0]
+
+    return alphas, us

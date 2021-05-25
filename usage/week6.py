@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numerical_continuation import natural_parameter_continuation
+from numerical_continuation import natural_parameter_continuation, pseudo_arclength
 import shooting
 
 def cubic_eq(x, c):
@@ -26,11 +26,16 @@ def hopf(u, t, beta):
     return np.array((du1dt, du2dt))
 
 
-problem_to_run = 2  # 1 for cubic_eq, 2 for hopf, 3 for hopf_mod
+problem_to_run = 1  # 1 for cubic_eq, 2 for hopf, 3 for hopf_mod
+method = 'PA' # 'NP' for natural parameter continuation, 'PA' for pseudo-arclength
 if problem_to_run == 1: # cubic_eq code
 
-    # Solve by natural parameter continuation
-    cs, xs = natural_parameter_continuation(cubic_eq, 1.5, (2, -2), 0.001, discretisation= lambda u0_, f, alpha: f(u0_, alpha))
+    if method == 'NP':
+        # Solve by natural parameter continuation
+        cs, xs = natural_parameter_continuation(cubic_eq, 1.5, (-2, 2), 0.001, discretisation= lambda u0_, f, alpha: f(u0_, alpha))
+    elif method == 'PA':
+        # Solve by pseudo-arclength continuation
+        cs, xs = pseudo_arclength(cubic_eq, 1.5, (-2, 2), 0.001, discretisation=lambda u0_, f, alpha: f(u0_, alpha))
 
     # Plot results - x against c
     plt.plot(cs, xs)
@@ -42,8 +47,12 @@ if problem_to_run == 1: # cubic_eq code
 
 elif problem_to_run == 2: # hopf code
 
-    # Solve by natural parameter continuation
-    betas, us = natural_parameter_continuation(hopf, (-1, 0, 6), (0, 2), 0.01, discretisation=lambda u0_, f, alpha: shooting.shoot(u0_, f, 0, alpha))
+    if method == 'NP':
+        # Solve by natural parameter continuation
+        betas, us = natural_parameter_continuation(hopf, (-1, 0, 6), (0, 2), 0.01, discretisation=lambda u0_, f, alpha: shooting.shoot(u0_, f, 0, alpha))
+    elif method == 'PA':
+        # Solve by pseudo-arclength continuation
+        betas, us = betas, us = pseudo_arclength(hopf, (-1, 0, 6), (0, 2), 0.01, discretisation=lambda u0_, f, alpha: shooting.shoot(u0_, f, 0, alpha))
 
     # Plot results - u1 and u2 against beta
     plt.plot(betas, [u[0] for u in us], betas, [u[1] for u in us])
