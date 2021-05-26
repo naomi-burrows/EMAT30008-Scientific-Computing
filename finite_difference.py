@@ -10,18 +10,19 @@ import scipy.sparse.linalg
 import pylab as pl
 from math import pi
 
-def finite_difference(u_I, kappa, L, T, mx, mt, method):
+def finite_difference(u_I, boundary, kappa, L, T, mx, mt, method):
     """
     Solves PDE using finite differences.
 
         Parameters:
-            u_I (function): Initial temperature distribution as a function of x
-            kappa (float):  Diffusion constant
-            L (float):      Length of spatial domain
-            T (float):      Total time to solve for
-            mx (int):       Number of gridpoints in space
-            mt (int):       Number of gridpoints in time
-            method (str):   The method to use. 'FE' for forward Euler, 'BE' for backward Euler, 'CN' for Crank Nicholson.
+            u_I (function):         Initial temperature distribution as a function of x
+            boundary (function):    Boundary condition, function of x and t.
+            kappa (float):          Diffusion constant
+            L (float):              Length of spatial domain
+            T (float):              Total time to solve for
+            mx (int):               Number of gridpoints in space
+            mt (int):               Number of gridpoints in time
+            method (str):           The method to use. 'FE' for forward Euler, 'BE' for backward Euler, 'CN' for Crank Nicholson.
 
         Returns:
             x, u_j (the values of u at each x at time T)
@@ -74,8 +75,8 @@ def finite_difference(u_I, kappa, L, T, mx, mt, method):
             u_jp1[1:] = scipy.sparse.linalg.spsolve(A_CN, B_CN.dot(u_j[1:]))
 
         # Boundary conditions
-        u_jp1[0] = 0
-        u_jp1[mx] = 0
+        u_jp1[0] = boundary(0, t[j])
+        u_jp1[mx] = boundary(L, t[j])
 
         # Save u_j at time t[j+1]
         u_j[:] = u_jp1[:]
@@ -94,6 +95,9 @@ if __name__ == "__main__":
         y = np.sin(pi * x / L)
         return y
 
+    def boundary(x, t):
+        return 0
+
     def u_exact(x, t):
         # the exact solution
         y = np.exp(-kappa * (pi ** 2 / L ** 2) * t) * np.sin(pi * x / L)
@@ -104,7 +108,7 @@ if __name__ == "__main__":
     mt = 1000  # number of gridpoints in time
 
     # Solve
-    x, u_j = finite_difference(u_I, kappa, L, T, mx, mt, method='CN')
+    x, u_j = finite_difference(u_I, boundary, kappa, L, T, mx, mt, method='CN')
 
     # Plot the final result and exact solution
     pl.plot(x, u_j, 'ro', label='num')
