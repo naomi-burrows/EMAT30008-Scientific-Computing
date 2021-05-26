@@ -1,13 +1,10 @@
-# simple forward Euler solver for the 1D heat equation
+# Finite difference solver for the 1D heat equation
 #   u_t = kappa u_xx  0<x<L, 0<t<T
-# with zero-temperature boundary conditions
-#   u=0 at x=0,L, t>0
-# and prescribed initial temperature
-#   u=u_I(x) 0<=x<=L,t=0
+# with given boundary conditions and initial temperature distribution
 
 import numpy as np
 import scipy.sparse.linalg
-import pylab as pl
+import matplotlib.pyplot as plt
 from math import pi
 
 def finite_difference(u_I, boundary, kappa, L, T, mx, mt, method):
@@ -107,14 +104,21 @@ if __name__ == "__main__":
     mx = 10  # number of gridpoints in space
     mt = 1000  # number of gridpoints in time
 
-    # Solve
+    # Solve using each method and plot results
+    # Forward Euler
+    x, u_j = finite_difference(u_I, boundary, kappa, L, T, mx, mt, method='FE')
+    plt.scatter(x, u_j)
+    # Backward Euler
+    x, u_j = finite_difference(u_I, boundary, kappa, L, T, mx, mt, method='BE')
+    plt.scatter(x, u_j)
+    # Crank Nicholson
     x, u_j = finite_difference(u_I, boundary, kappa, L, T, mx, mt, method='CN')
+    plt.scatter(x, u_j)
 
-    # Plot the final result and exact solution
-    pl.plot(x, u_j, 'ro', label='num')
+    # Plot exact solution
     xx = np.linspace(0, L, 250)
-    pl.plot(xx, u_exact(xx, T), 'b-', label='exact')
-    pl.xlabel('x')
-    pl.ylabel('u(x,'+str(T)+')')
-    pl.legend(loc='upper right')
-    pl.show()
+    plt.plot(xx, u_exact(xx, T), color='red')
+    plt.xlabel('x')
+    plt.ylabel('u(x,'+str(T)+')')
+    plt.legend(['Exact', 'Forward Euler', 'Backward Euler', 'Crank Nicholson'])
+    plt.show()
